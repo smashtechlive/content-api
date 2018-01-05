@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const config = require('./lib/config');
+const bodyParser = require('body-parser');
 const port = process.env.PORT || 3022;
 
 app.use(function(req, res, next) {
@@ -10,6 +11,8 @@ app.use(function(req, res, next) {
 });
 
 app.set('json_spaces', 2);
+
+app.use(bodyParser.json());
 
 // Load Routes
 let folders = require('./routes/folders');
