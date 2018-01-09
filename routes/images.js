@@ -6,7 +6,7 @@ const multerS3 = require('multer-s3');
 
 let AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
 let AWS_SECRET_KEY = process.env.AWS_SECRET_KEY;
-let S3_BUCKET = 'bgbucketfirst';
+let S3_BUCKET = 'smashbucketrepo';
 
 router.get('/', function(req, res) {
 	res.send('IMAGES index route');
@@ -22,7 +22,7 @@ let s3 = new aws.S3();
 let upload = multer({
 	storage: multerS3({
 		s3: s3,
-		bucket: 'smashbucketrepo',
+		bucket: S3_BUCKET,		
 		key: function (req, file, callback) {
 			callback(null, file.originalname);
 		}
