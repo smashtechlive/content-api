@@ -12,7 +12,12 @@ app.use(function(req, res, next) {
 
 app.set('json_spaces', 2);
 
+// support JSON-encoded bodies
 app.use(bodyParser.json());
+// support URL-encoded bodies
+app.use(bodyParser.urlencoded({
+	extended: true
+}));
 
 // Load Routes
 let folders = require('./routes/folders');

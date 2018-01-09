@@ -1,10 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const config = require('../lib/config');
+const moment = require('moment');
 
 // CREATE
 router.post('/', function(req, res) {
-	res.send('FOLDERS create route');
+
+	let folderValue = req.body.folder || 'global';
+	let subfolders = req.body.subfolders.split(',') || [];
+	let utcDateTime = moment.utc().format('YYYY-MM-DD HH:mm:ss');
+	let record = { 
+		folder: folderValue, 
+		subfolders: subfolders,
+		utcDateTime: utcDateTime };
+
+	config.db.collection('folders').insert(record, function(err, result) {
+		if (err)
+			console.log(err);		
+		res.status(201).send('Folder Document Created');
+	});
+
 });
 
 // READ
