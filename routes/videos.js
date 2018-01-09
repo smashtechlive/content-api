@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router(); 
 const config = require('../lib/config');
 const moment = require('moment');
+const ObjectID = require('mongodb').ObjectID;
 
 // CREATE
 router.post('/', function(req, res) {
@@ -36,6 +37,31 @@ router.get('/', function(req, res) {
 });
 
 // UPDATE
+router.put('/:id', function(req, res) {
+	let recordId = req.params.id;
+	let query = {'_id': new ObjectID(recordId)};
+	let newFolder = req.body.folder || 'global-video';
+	let newVideo = req.body.video;
+	let newValues = { $set: {folder: newFolder, video: newVideo }};
+	
+	config.db.collection('videos').updateOne(query, newValues, function(err, result) {
+		if (err) { console.log(err); }
+		res.status(202).send('Video Record Updated');
+	});	
+
+});
+
 // DELETE
+router.delete('/:id', function(req, res) {
+	let recordId = req.params.id;
+	let query = {"_id": new ObjectID(recordId)};
+
+	config.db.collection('videos').remove(query, function (err, result) {
+		if (err)
+			console.log(err);	
+		res.send('Video Deleted');
+	});
+	
+});
 
 module.exports = router;

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const config = require('../lib/config');
 const moment = require('moment');
+const ObjectID = require('mongodb').ObjectID;
 
 // CREATE
 router.post('/', function(req, res) {
@@ -35,7 +36,32 @@ router.get('/', function(req, res) {
 });
 
 // UPDATE
+router.put('/:id', function(req, res) {
+	let recordId = req.params.id;
+	let query = {'_id': new ObjectID(recordId)};
+	let newFolder = req.body.folder || 'global';
+	let newValues = {$set: {folder: newFolder}};
+	
+
+	config.db.collection('folders').updateOne(query, newValues, function(err, result) {
+		if (err) { console.log(err); }
+		res.send('Folder Record Updated');
+	});	
+
+});
+
 // DELETE
+router.delete('/:id', function(req, res) {
+	let recordId = req.params.id;
+	let query = {'_id': new ObjectID(recordId)};
+
+	config.db.collection('folders').remove(query, function (err, result) {
+		if (err)
+			console.log(err);
+		res.send('Folder Deleted');
+	});
+	
+});
 
 
 module.exports = router;
