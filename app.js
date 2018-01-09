@@ -24,6 +24,7 @@ let folders = require('./routes/folders');
 let images = require('./routes/images');
 let videos = require('./routes/videos');
 let buckets = require('./routes/buckets');
+let upload = require('./routes/upload');
 
 //for health checks 
 app.get('/ping', function (req, res) {	
@@ -35,6 +36,7 @@ app.use('/folders', folders);
 app.use('/images', images);
 app.use('/videos', videos);
 app.use('/buckets', buckets);
+app.use('/upload', upload);
 
 // Bind API to PORT
 app.listen(port, function () {
