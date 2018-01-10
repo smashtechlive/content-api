@@ -16,10 +16,11 @@ router.post('/', function(req, res) {
 		utcDateTime: utcDateTime };
 
 	config.db.collection('folders').insert(record, function(err, result) {
-		if (err)
-			var errorMsg = {msg: 'Problem Folder Document', error: err };
+		if (err)  {
+			var errorMsg = {msg: 'Problem Creating Folder Document', error: err };
 			// log.publish(errorMsg);
 		  res.status(500).send(errorMsg);
+		}			
 		res.status(201).send('Folder Document Created');
 	});
 
@@ -31,6 +32,10 @@ router.get('/', function(req, res) {
 	let recordLimit = req.query.limit || 50; 
 
 	config.db.collection('folders').find({}).limit(recordLimit).toArray(function (err, folders) {
+		if (err) {
+			var errorMsg = {msg: 'Problem Retrieving Folder Documents', error: err };
+			res.status(500).send(errorMsg);
+		}
 		let payload = {data: folders};
 		res.send(payload)
 	});
@@ -41,12 +46,18 @@ router.get('/', function(req, res) {
 router.put('/:id', function(req, res) {
 	let recordId = req.params.id;
 	let query = {'_id': new ObjectID(recordId)};
-	let newFolder = req.body.folder || 'global';
-	let newValues = {$set: {folder: newFolder}};
-	
+	let newValues = { $set: {}};
+
+	// folder property
+	if (req.body.folder) {
+		newValues.$set.folder = req.body.folder;
+	}
 
 	config.db.collection('folders').updateOne(query, newValues, function(err, result) {
-		if (err) { console.log(err); }
+		if (err) { 
+			var errorMsg = {msg: 'Problem Updating Folder Document', error: err };
+			res.status(500).send(errorMsg); 
+		}
 		res.send('Folder Record Updated');
 	});	
 
@@ -58,8 +69,10 @@ router.delete('/:id', function(req, res) {
 	let query = {'_id': new ObjectID(recordId)};
 
 	config.db.collection('folders').remove(query, function (err, result) {
-		if (err)
-			console.log(err);
+		if (err) {			
+			var errorMsg = {msg: 'Problem Deleting Folder Documents', error: err };
+			res.status(500).send(errorMsg);
+		}
 		res.send('Folder Deleted');
 	});
 	

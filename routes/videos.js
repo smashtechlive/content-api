@@ -18,7 +18,8 @@ router.post('/', function(req, res) {
 
 	config.db.collection('videos').insert(record, function(err, result) {
 		if (err)
-			console.log(err);		
+			var errorMsg = {msg: 'Problem Creating Video Document', error: err };
+			res.status(500).send(errorMsg);		
 		res.status(201).send('Video Document Created');
 	});
 	
@@ -30,6 +31,10 @@ router.get('/', function(req, res) {
 	let recordLimit = req.query.limit || 50; 
 
 	config.db.collection('videos').find({}).limit(recordLimit).toArray(function (err, videos) {
+		if (err) {
+			var errorMsg = {msg: 'Problem Retrieving Video Documents', error: err };
+			res.status(500).send(errorMsg);
+		}
 		let payload = {data: videos};
 		res.send(payload)
 	});
@@ -45,7 +50,10 @@ router.put('/:id', function(req, res) {
 	let newValues = { $set: {folder: newFolder, video: newVideo }};
 	
 	config.db.collection('videos').updateOne(query, newValues, function(err, result) {
-		if (err) { console.log(err); }
+		if (err) { 
+			var errorMsg = {msg: 'Problem Updating Video Document', error: err };
+			res.status(500).send(errorMsg); 
+		}
 		res.status(202).send('Video Record Updated');
 	});	
 
@@ -57,8 +65,10 @@ router.delete('/:id', function(req, res) {
 	let query = {"_id": new ObjectID(recordId)};
 
 	config.db.collection('videos').remove(query, function (err, result) {
-		if (err)
-			console.log(err);	
+		if (err) {
+			var errorMsg = {msg: 'Problem Deleting Video Document', error: err };
+			res.status(500).send(errorMsg);
+		}
 		res.send('Video Deleted');
 	});
 	

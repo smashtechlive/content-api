@@ -16,18 +16,15 @@ router.post('/', function(req, res) {
 
 	// Include image prop if sent in request
 	if (req.body.image) {
-		record = {
-			folder: folderValue,
-			image: req.body.image,
-			utcDateTime: utcDateTime
-		}
+		record.image = req.body.image;
 	}
 
 	config.db.collection('images').insert(record, function(err, result) {
-		if (err)			
-			var errorMsg = {msg: 'Problem Image Document', error: err };
+		if (err) {
+			var errorMsg = {msg: 'Problem Creating Image Document', error: err };
 			// log.publish(errorMsg);
 		  res.status(500).send(errorMsg);
+		}			
 		res.status(201).send('Image Document Created');
 	});
 
@@ -38,10 +35,11 @@ router.get('/', function(req, res) {
 	let recordLimit = req.query.limit || 50;
 
 	config.db.collection('images').find({}).limit(recordLimit).toArray(function (err, images) {
-		if (err)
-			var errorMsg = {msg: 'Problem Retrieving Image Document', error: err };
+		if (err) {
+			var errorMsg = {msg: 'Problem Retrieving Image Documents', error: err };
 			// log.publish(errorMsg);
 		  res.status(500).send(errorMsg);
+		}			
 		let payload = {data: images};
 		res.status(200).send(payload);
 	});
@@ -64,8 +62,10 @@ router.put('/:id', function(req, res) {
 	}
 
 	config.db.collection('images').updateOne(query, newValues, function(err, result) {
-		if (err)
-			console.log(err);
+		if (err) {			
+			var errorMsg = {msg: 'Problem Updating Image Document', error: err };
+			res.status(500).send(errorMsg);
+		}
 		res.send('Image Record Updated')
 	});
 	
@@ -78,8 +78,11 @@ router.delete('/:id', function(req, res) {
 	let query = {"_id": new ObjectID(recordId)};
 
 	config.db.collection('images').remove(query, function (err, result) {
-		if (err)
-			console.log(err);
+		if (err) {			
+			var errorMsg = {msg: 'Problem Deleting Image Document', error: err };
+			// log.publish(errorMsg);
+			res.status(500).send(errorMsg);
+		}
 		res.send('Image Deleted');
 	});
 });
