@@ -19,6 +19,15 @@ app.use(bodyParser.urlencoded({
 	extended: true
 }));
 
+// middleware to fail-fast if no DB connection
+app.use(function (req, res, next) {
+	if (!config.db) {
+		res.send({ Error: 'No DB Connection' })
+	} else {
+		next();
+	}
+});
+
 // Load Routes
 let folders = require('./routes/folders');
 let images = require('./routes/images');
