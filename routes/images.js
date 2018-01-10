@@ -1,37 +1,87 @@
 const express = require('express');
 const router = express.Router();
-const aws = require('aws-sdk');
-const multer = require('multer');
-const multerS3 = require('multer-s3');
+const config = require('../lib/config');
+const moment = require('moment');
+const ObjectID = require('mongodb').ObjectID;
 
-let AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
-let AWS_SECRET_KEY = process.env.AWS_SECRET_KEY;
-let S3_BUCKET = 'smashbucketrepo';
+// CREATE
+router.post('/', function(req, res) {
+	
+	let folderValue = req.body.folder || 'global-images-raw';	
+	let utcDateTime = moment.utc().format('YYYY-MM-DD HH:mm:ss');
+	let record = {
+		folder: folderValue,
+		utcDateTime: utcDateTime
+	};
 
-router.get('/', function(req, res) {
-	res.send('IMAGES index route');
-});
-
-aws.config.update({
-	accessKeyId: AWS_ACCESS_KEY,
-	secretAccessKey: AWS_SECRET_KEY,
-	region: 'us-west-2'
-});
-
-let s3 = new aws.S3();
-let upload = multer({
-	storage: multerS3({
-		s3: s3,
-		bucket: S3_BUCKET,		
-		key: function (req, file, callback) {
-			callback(null, file.originalname);
+	// Include image prop if sent in request
+	if (req.body.image) {
+		record = {
+			folder: folderValue,
+			image: req.body.image,
+			utcDateTime: utcDateTime
 		}
-	})
+	}
+
+	config.db.collection('images').insert(record, function(err, result) {
+		if (err)			
+			var errorMsg = {msg: 'Problem Image Document', error: err };
+			// log.publish(errorMsg);
+		  res.status(500).send(errorMsg);
+		res.status(201).send('Image Document Created');
+	});
 
 });
 
-router.post('/upload', upload.array('upl', 1), function (req, res, next) {
-	res.send('image uploaded');
+// READ
+router.get('/', function(req, res) {
+	let recordLimit = req.query.limit || 50;
+
+	config.db.collection('images').find({}).limit(recordLimit).toArray(function (err, images) {
+		if (err)
+			var errorMsg = {msg: 'Problem Retrieving Image Document', error: err };
+			// log.publish(errorMsg);
+		  res.status(500).send(errorMsg);
+		let payload = {data: images};
+		res.status(200).send(payload);
+	});
+});
+
+// UPDATE
+router.put('/:id', function(req, res) {
+	let recordId = req.params.id;
+	let query = {'_id': new ObjectID(recordId)};
+	let newValues = { $set: {}}
+
+	// folder property
+	if (req.body.folder) {
+		newValues.$set.folder = req.body.folder;
+	}
+
+	// images property
+	if (req.body.image) {
+		newValues.$set.image = req.body.image;
+	}
+
+	config.db.collection('images').updateOne(query, newValues, function(err, result) {
+		if (err)
+			console.log(err);
+		res.send('Image Record Updated')
+	});
+	
+
+});
+
+// DELETE
+router.delete('/:id', function(req, res) {
+	let recordId = req.params.id;
+	let query = {"_id": new ObjectID(recordId)};
+
+	config.db.collection('images').remove(query, function (err, result) {
+		if (err)
+			console.log(err);
+		res.send('Image Deleted');
+	});
 });
 
 module.exports = router;

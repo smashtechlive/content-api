@@ -17,7 +17,9 @@ router.post('/', function(req, res) {
 
 	config.db.collection('folders').insert(record, function(err, result) {
 		if (err)
-			console.log(err);		
+			var errorMsg = {msg: 'Problem Folder Document', error: err };
+			// log.publish(errorMsg);
+		  res.status(500).send(errorMsg);
 		res.status(201).send('Folder Document Created');
 	});
 
